@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>தாஸ் இணைப்பு சேவை | Dhass Connect</title>
+<style>
+  :root{
+    --primary:#0b6e4f; --primary-dark:#084d38; --accent:#d98c00;
+    --bg:#f5f7f6; --card:#ffffff; --text:#1e2a26; --muted:#6b7a75;
+    --border:#e1e6e4; --danger:#c0392b; --success:#1e8e5a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans Tamil','Latha',sans-serif;background:var(--bg);color:var(--text);}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:18px 16px;text-align:center;}
+  header h1{margin:0;font-size:22px;}
+  header p{margin:4px 0 0;font-size:13px;opacity:.9}
+  nav{display:flex;justify-content:center;gap:8px;background:#fff;border-bottom:1px solid var(--border);padding:8px;flex-wrap:wrap;position:sticky;top:0;z-index:10;}
+  nav button{background:none;border:1px solid var(--border);padding:8px 14px;border-radius:20px;cursor:pointer;font-size:14px;color:var(--text);}
+  nav button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  main{max-width:1080px;margin:0 auto;padding:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .cat-grid button{padding:12px 6px;border-radius:10px;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:14px;font-weight:600;}
+  .cat-grid button.sel{border-color:var(--primary);background:#e8f5ef;color:var(--primary-dark);}
+  .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .type-grid button{padding:12px;border-radius:10px;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:15px;font-weight:600;}
+  .type-grid button.sel{border-color:var(--accent);background:#fff6e6;color:#8a5a00;}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+  input,select,textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;}
+  textarea{min-height:70px;resize:vertical;}
+  .btn{display:inline-block;background:var(--primary);color:#fff;border:none;padding:12px 20px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:600;}
+  .btn.secondary{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+  .btn.small{padding:6px 12px;font-size:13px;}
+  .btn.danger{background:var(--danger);}
+  .btn.wa{background:#1ebe57;}
+  .btn.gold{background:var(--accent);}
+  .btn.icon{padding:6px 9px;font-size:14px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .listing{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fafcfb;}
+  .listing .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap;}
+  .badge.need{background:#ffe8e0;color:#c0392b;}
+  .badge.provide{background:#e0f2ea;color:var(--success);}
+  .badge.pending{background:#fff3d6;color:#8a5a00;}
+  .badge.approved{background:#e0f2ea;color:var(--success);}
+  .badge.matched{background:#e0ecff;color:#2952a3;}
+  .badge.rejected{background:#f3d9d9;color:var(--danger);}
+  .badge.unpaid{background:#ffe0e0;color:var(--danger);}
+  .badge.paid{background:#e0f2ea;color:var(--success);}
+  .badge.completed{background:#e6dcfa;color:#5b2fa8;}
+  .listing h4{margin:6px 0 2px;font-size:16px;}
+  .listing .meta{font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:14px;}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1e2a26;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;z-index:100;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;}
+  .toast.show{opacity:1;}
+  .pwbox{max-width:340px;margin:40px auto;text-align:center;}
+  .sync-status{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+  .filter-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .filter-row select{flex:1;min-width:110px;}
+  .settings-box{font-size:12px;}
+  .settings-box input{margin-bottom:8px;}
+  .note{font-size:12px;color:var(--muted);margin-top:6px;}
+  .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+  .plan-card{border:2px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;background:#fff;}
+  .plan-card.sel{border-color:var(--accent);background:#fff6e6;}
+  .plan-card b{display:block;font-size:16px;color:var(--primary-dark);}
+  .plan-card span{font-size:12px;color:var(--muted);}
+  .pay-box{background:#fff6e6;border:1px dashed var(--accent);border-radius:10px;padding:14px;text-align:center;margin-top:10px;}
+  .pay-box img{width:170px;height:170px;margin:8px auto;display:block;border-radius:8px;background:#fff;}
+  .thumb-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .thumb-row img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border);}
+  .file-chip{font-size:12px;background:#eef3f1;padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px;}
+  .paystatus-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:13px;}
+  details.fsec{border:1px solid var(--border);border-radius:10px;margin-top:10px;padding:0;overflow:hidden;}
+  details.fsec summary{padding:10px 12px;background:#eef5f1;cursor:pointer;font-weight:700;color:var(--primary-dark);font-size:14px;}
+  details.fsec .fsec-body{padding:6px 12px 12px;}
+  .userbar{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:8px 16px;border-bottom:1px solid var(--border);font-size:13px;}
+  .userbar b{color:var(--primary-dark);}
+  .authwrap{max-width:380px;margin:40px auto;padding:0 16px;}
+  .authtabs{display:flex;gap:6px;margin-bottom:14px;}
+  .authtabs button{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:14px;}
+  .authtabs button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .kv{font-size:13px;margin:2px 0;}
+  .kv b{color:var(--muted);font-weight:600;}
+
+  .confirm-screen{text-align:center;padding:30px 16px;}
+  .confirm-screen .ref-big{font-size:28px;font-weight:800;color:var(--primary-dark);background:#e8f5ef;border:2px dashed var(--primary);border-radius:12px;padding:16px;margin:16px 0;letter-spacing:1px;}
+  .confirm-screen .checkmark{font-size:48px;}
+
+  .cat-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .cat-tabs button{flex:1;min-width:120px;padding:10px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:600;}
+  .cat-tabs button.active{background:var(--primary-dark);color:#fff;border-color:var(--primary-dark);}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .stat-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+  .stat-box .n{font-size:20px;font-weight:800;color:var(--primary-dark);}
+  .stat-box .l{font-size:11px;color:var(--muted);}
+  .dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px;}
+  .dash-box{background:#fff;border:2px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:.15s;}
+  .dash-box:hover{border-color:var(--primary);transform:translateY(-1px);}
+  .dash-box.active{border-color:var(--accent);background:#fff6e6;}
+  .dash-box .n{font-size:22px;font-weight:800;color:var(--primary-dark);}
+  .dash-box .l{font-size:11px;color:var(--muted);margin-top:2px;}
+  .dash-exit{text-align:center;margin-bottom:10px;}
+  .userlookup{font-size:12px;}
+  .userlookup .found{background:#eef5f1;border-radius:8px;padding:10px;margin-top:8px;}
+
+  .match-board{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .match-col h5{margin:0 0 8px;font-size:14px;text-align:center;padding:6px;border-radius:6px;}
+  .match-col.need h5{background:#ffe8e0;color:#c0392b;}
+  .match-col.provide h5{background:#e0f2ea;color:var(--success);}
+  .match-item{border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;cursor:pointer;background:#fff;}
+  .match-item.picked{border-color:var(--accent);background:#fff6e6;}
+  .match-item b{font-size:13px;}
+  .match-bar{display:none;justify-content:center;margin:10px 0;}
+  .match-bar.show{display:flex;}
+
+  table.report{width:100%;border-collapse:collapse;font-size:12px;}
+  table.report th{background:#eef5f1;color:var(--primary-dark);padding:8px 6px;text-align:left;position:sticky;top:0;white-space:nowrap;}
+  table.report td{padding:7px 6px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  table.report tr:hover{background:#fafcfb;}
+  .table-wrap{overflow-x:auto;}
+  .ref-chip{font-family:monospace;font-size:11px;background:#eef3f1;padding:2px 6px;border-radius:4px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 10px;}
+  .modal-box{background:#fff;border-radius:12px;max-width:600px;width:100%;padding:18px;margin-top:20px;}
+  .modal-box h3{margin-top:0;}
+  .modal-close{float:left;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH GATE ================= -->
+<div id="authGate">
+  <header>
+    <h1>தாஸ் இணைப்பு சேவை</h1>
+    <p>மேட்ரிமோனி • ரியல் எஸ்டேட் • நிதி/கடன் — தேவை உள்ளவர்களையும் வழங்குபவர்களையும் இணைக்கிறோம்</p>
+  </header>
+  <div class="authwrap">
+    <div class="authtabs">
+      <button id="showRegisterBtn" class="active">புதிய பதிவு</button>
+      <button id="showLoginBtn">உள்நுழைய</button>
+    </div>
+
+    <div class="card" id="registerCard">
+      <label>பெயர்</label>
+      <input id="reg_name" placeholder="உங்கள் பெயர்">
+      <label>செல் நம்பர்</label>
+      <input id="reg_phone" placeholder="9xxxxxxxxx" maxlength="10">
+      <label>தேவையான சேவை</label>
+      <select id="reg_service">
+        <option value="matrimony">💍 மேட்ரிமோனி</option>
+        <option value="realestate">🏠 ரியல் எஸ்டேட்</option>
+        <option value="finance">💰 நிதி/கடன்</option>
+      </select>
+      <label>பாஸ்வேர்ட் அமைக்க</label>
+      <input id="reg_pw" type="password" placeholder="குறைந்தது 4 எழுத்துகள்">
+      <label>பாஸ்வேர்ட் மீண்டும்</label>
+      <input id="reg_pw2" type="password" placeholder="பாஸ்வேர்ட் மீண்டும் தட்டச்சு செய்யவும்">
+      <div class="row">
+        <button class="btn" id="registerBtn" style="width:100%">பதிவு செய்து தொடங்கு</button>
+      </div>
+    </div>
+
+    <div class="card" id="loginCard" style="display:none">
+      <label>செல் நம்பர்</label>
+      <input id="login_phone" placeholder="9xxxxxxxxx" maxlength="10">
+      <label>பாஸ்வேர்ட்</label>
+      <input id="login_pw" type="password" placeholder="பாஸ்வேர்ட்">
+      <div class="row">
+        <button class="btn" id="loginBtn" style="width:100%">உள்நுழைய</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="appRoot" style="display:none">
+
+<header>
+  <h1>தாஸ் இணைப்பு சேவை</h1>
+  <p>மேட்ரிமோனி • ரியல் எஸ்டேட் • நிதி/கடன் — தேவை உள்ளவர்களையும் வழங்குபவர்களையும் இணைக்கிறோம்</p>
+</header>
+
+<div class="userbar">
+  <span>வணக்கம், <b id="userNameLabel"></b></span>
+  <button class="btn small secondary" id="logoutBtn">வெளியேறு</button>
+</div>
+
+<nav id="mainNav">
+  <button data-tab="submit" class="active">📝 பதிவு செய்ய</button>
+  <button data-tab="browse">🔎 பட்டியல் பார்க்க</button>
+  <button data-tab="admin">🔑 நிர்வாகம்</button>
+</nav>
+
+<main>
+
+<!-- ================= SUBMIT TAB ================= -->
+<div id="tab-submit">
+
+  <div class="card confirm-screen" id="confirmScreen" style="display:none">
+    <div class="checkmark">✅</div>
+    <h3>பதிவு வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!</h3>
+    <p>உங்கள் குறிப்பு எண் (Reference Number)</p>
+    <div class="ref-big" id="confirmRef">-</div>
+    <p class="note">இந்த எண்ணை குறித்து வைத்துக்கொள்ளவும் — தொடர்பு கொள்ளும்போது இதை கூறவும்.<br>கட்டணம் உறுதி செய்யப்பட்ட பின் நிர்வாகி அனுமதிப்பார்.</p>
+    <button class="btn" id="confirmOkBtn">சரி, முகப்புக்கு செல்ல</button>
+  </div>
+
+  <div class="card" id="submitFormCard">
+    <label>வகையைத் தேர்ந்தெடுக்கவும்</label>
+    <div class="cat-grid" id="catGrid">
+      <button data-cat="matrimony" class="sel">💍 மேட்ரிமோனி</button>
+      <button data-cat="realestate">🏠 ரியல் எஸ்டேட்</button>
+      <button data-cat="finance">💰 நிதி/கடன்</button>
+    </div>
+
+    <label>நீங்கள்...</label>
+    <div class="type-grid" id="typeGrid">
+      <button data-type="need" class="sel">தேவை உள்ளவர் (Need)</button>
+      <button data-type="provide">வழங்குபவர் (Provider)</button>
+    </div>
+
+    <label>பெயர்</label>
+    <input id="f_name" placeholder="உங்கள் பெயர்">
+    <label>தொலைபேசி எண் (WhatsApp)</label>
+    <input id="f_phone" placeholder="9xxxxxxxxx" maxlength="10">
+    <label>ஊர் / பகுதி</label>
+    <input id="f_place" placeholder="எ.கா. தூத்துக்குடி">
+
+    <div id="dynFields"></div>
+
+    <label>கூடுதல் விவரம்</label>
+    <textarea id="f_details" placeholder="தேவை / வழங்கும் விவரங்களை இங்கே எழுதவும்"></textarea>
+
+    <div id="fileFields"></div>
+
+    <div class="note">⚠️ உங்கள் தொலைபேசி எண் நிர்வாகி (admin) அனுமதித்த பின்னரே, பொருத்தமான தரப்புக்கு மட்டும் அனுப்பப்படும்.</div>
+
+    <div id="paymentSection" style="display:none">
+      <label>கட்டண திட்டம் (சேவை கட்டணம்)</label>
+      <div class="plan-grid" id="planGrid">
+        <div class="plan-card sel" data-plan="onetime">
+          <b>₹999</b>
+          <span>ஒருமுறை கட்டணம் — 1 தேவை நிறைவடையும் வரை முழு சேவை</span>
+        </div>
+        <div class="plan-card" data-plan="perpost">
+          <b>₹99</b>
+          <span>ஒவ்வொரு பதிவுக்கும் — இந்த பதிவு மட்டும்</span>
+        </div>
+      </div>
+      <div class="pay-box" id="payBox">
+        <div>கீழே உள்ள UPI QR-ஐ Scan செய்து <b id="payAmountLabel">₹999</b> செலுத்தவும்</div>
+        <img id="qrImg" src="" alt="UPI QR">
+        <div><a id="upiLink" href="#" class="btn gold small">📲 UPI App-ல் திற</a></div>
+        <label>Payment செய்த பின், UPI Reference / UTR எண்ணை பதிவு செய்யவும்</label>
+        <input id="f_utr" placeholder="எ.கா. 402812345678">
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="submitBtn" style="width:100%">சமர்ப்பிக்க</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BROWSE TAB ================= -->
+<div id="tab-browse" style="display:none">
+  <div class="card">
+    <div class="filter-row">
+      <select id="browseCat">
+        <option value="">அனைத்து வகை</option>
+        <option value="matrimony">மேட்ரிமோனி</option>
+        <option value="realestate">ரியல் எஸ்டேட்</option>
+        <option value="finance">நிதி/கடன்</option>
+      </select>
+      <select id="browseType">
+        <option value="">அனைத்தும்</option>
+        <option value="need">தேவை</option>
+        <option value="provide">வழங்குபவர்</option>
+      </select>
+    </div>
+  </div>
+  <div id="browseList"></div>
+</div>
+
+<!-- ================= ADMIN TAB ================= -->
+<div id="tab-admin" style="display:none">
+
+  <div id="adminLogin" class="card pwbox">
+    <p>நிர்வாக கடவுச்சொல்</p>
+    <input type="password" id="adminPw" placeholder="கடவுச்சொல்">
+    <div class="row" style="justify-content:center;margin-top:10px;">
+      <button class="btn" id="adminLoginBtn">உள்நுழைய</button>
+    </div>
+  </div>
+
+  <div id="adminPanel" style="display:none">
+
+    <div class="card settings-box">
+      <b>⚙️ அமைப்பு</b>
+      <label>UPI ID (கட்டணம் பெற)</label>
+      <input id="upiId" placeholder="yourname@upi">
+      <label>Google Apps Script Web App URL (விருப்பம் — cloud sync)</label>
+      <input id="scriptUrl" placeholder="https://script.google.com/macros/s/xxxx/exec">
+      <div class="row">
+        <button class="btn small" id="saveSettingsBtn">சேமிக்க</button>
+        <button class="btn small secondary" id="syncNowBtn">🔄 இப்போதே Sync</button>
+      </div>
+      <div class="sync-status" id="syncStatus">—</div>
+      <div class="note">⚠️ போட்டோ/பைல் இணைப்புகள் cloud sync-ல் அனுப்பப்படாது.</div>
+    </div>
+
+    <div class="card settings-box userlookup">
+      <b>👤 வாடிக்கையாளர் பாஸ்வேர்ட் மீட்டமை</b>
+      <label>செல் நம்பர்</label>
+      <div class="row">
+        <input id="ulPhone" placeholder="9xxxxxxxxx" style="flex:1">
+        <button class="btn small secondary" id="ulSearchBtn">தேடு</button>
+      </div>
+      <div id="ulResult"></div>
+    </div>
+
+    <div class="card">
+      <b>📊 மொத்த டாஷ்போர்டு (அனைத்து துறைகளும் சேர்த்து)</b>
+      <div class="dash-grid" id="dashGrid" style="margin-top:10px"></div>
+      <div class="dash-exit" id="dashExitWrap" style="display:none">
+        <button class="btn small secondary" id="dashExitBtn">✖ Dashboard பட்டியலை மூடி, துறை வாரியாக பார்க்க</button>
+      </div>
+    </div>
+
+    <div class="cat-tabs" id="adminCatTabs">
+      <button data-cat="matrimony" class="active">💍 மேட்ரிமோனி ரிப்போர்ட்</button>
+      <button data-cat="realestate">🏠 ரியல் எஸ்டேட் ரிப்போர்ட்</button>
+      <button data-cat="finance">💰 நிதி ரிப்போர்ட்</button>
+    </div>
+
+    <div class="stat-grid" id="adminStats"></div>
+
+    <div class="card">
+      <b>🔗 பொருத்துதல் — தேவை (இடது) ↔ வழங்குபவர் (வலது)</b>
+      <div class="row match-bar" id="matchBar">
+        <button class="btn gold small" id="matchGoBtn">🔗 தேர்ந்தெடுத்த இருவரையும் பொருத்து</button>
+        <button class="btn small secondary" id="matchClearBtn">✖ தேர்வை நீக்கு</button>
+      </div>
+      <div class="match-board" id="matchBoard"></div>
+    </div>
+
+    <div class="card">
+      <div class="filter-row">
+        <input id="reportSearch" placeholder="🔍 பெயர் / செல் / குறிப்பு எண் தேடுக...">
+        <select id="adminStatusFilter">
+          <option value="">அனைத்து நிலை</option>
+          <option value="pending">நிலுவையில்</option>
+          <option value="approved">அனுமதிக்கப்பட்டது</option>
+          <option value="matched">பொருத்தப்பட்டது</option>
+          <option value="completed">வெற்றி (முடிந்தது)</option>
+          <option value="rejected">நிராகரிக்கப்பட்டது</option>
+        </select>
+      </div>
+      <div class="row">
+        <button class="btn small secondary" id="exportBtn">⬇️ JSON Export</button>
+        <button class="btn small secondary" id="importBtn">⬆️ JSON Import</button>
+        <input type="file" id="importFile" style="display:none" accept=".json">
+      </div>
+    </div>
+
+    <div class="card table-wrap">
+      <table class="report" id="reportTable"></table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_PASSWORD = "dhass2026"; // இதை மாற்றிக்கொள்ளவும்
+const PLAN_AMOUNT = {onetime:999, perpost:99};
+const PLAN_LABEL = {onetime:"ஒருமுறை கட்டணம் (₹999)", perpost:"ஒவ்வொரு பதிவும் (₹99)"};
+const MAX_FILE_MB = 3;
+const REF_PREFIX = {matrimony:'M', realestate:'R', finance:'F'};
+
+const CAT_LABEL = {matrimony:"💍 மேட்ரிமோனி", realestate:"🏠 ரியல் எஸ்டேட்", finance:"💰 நிதி/கடன்"};
+const TYPE_LABEL = {need:"தேவை", provide:"வழங்குபவர்"};
+const STATUS_LABEL = {pending:"நிலுவையில்", approved:"அனுமதிக்கப்பட்டது", matched:"பொருத்தப்பட்டது", completed:"வெற்றி (முடிந்தது)", rejected:"நிராகரிக்கப்பட்டது"};
+
+const FIELD_CONFIG = {
+  matrimony: [
+    {section:"அடிப்படை தகவல்கள்", fields:[
+      {id:'age', label:'வயது', type:'number'},
+      {id:'dob', label:'பிறந்த தேதி', type:'date'},
+      {id:'gender', label:'பாலினம்', type:'select', options:['ஆண்','பெண்']},
+      {id:'religion', label:'மதம்', type:'text'},
+      {id:'caste', label:'ஜாதி', type:'text'},
+      {id:'subcaste', label:'துணை ஜாதி', type:'text'},
+      {id:'motherTongue', label:'தாய்மொழி', type:'text'},
+      {id:'maritalStatus', label:'திருமண நிலை', type:'select', options:['திருமணமாகாதவர்','விவாகரத்து பெற்றவர்','விதவை/விதவன்']},
+      {id:'currentCity', label:'தற்போதைய வசிக்கும் இடம்', type:'text'},
+    ]},
+    {section:"கல்வி, தொழில் & வாழ்க்கை முறை", fields:[
+      {id:'education', label:'கல்வித் தகுதி', type:'text'},
+      {id:'profession', label:'தொழில்', type:'text'},
+      {id:'company', label:'பணிபுரியும் நிறுவனம்', type:'text'},
+      {id:'annualIncome', label:'ஆண்டு வருமானம் (₹)', type:'text'},
+      {id:'height', label:'உயரம் (அடி/அங்குலம்)', type:'text'},
+      {id:'weight', label:'எடை (கிலோ)', type:'text'},
+      {id:'bloodGroup', label:'இரத்த வகை', type:'text'},
+      {id:'complexion', label:'நிறம்', type:'select', options:['வெளிர்','இயல்பான','கருப்பு']},
+      {id:'diet', label:'உணவு பழக்கம்', type:'select', options:['சைவம்','அசைவம்']},
+      {id:'drinking', label:'மது பழக்கம்', type:'select', options:['இல்லை','அரிதாக','அடிக்கடி']},
+      {id:'smoking', label:'புகைப்பழக்கம்', type:'select', options:['இல்லை','ஆம்']},
+      {id:'hobbies', label:'ஹாபிகள் / ஆர்வங்கள்', type:'text'},
+    ]},
+    {section:"குடும்ப விவரங்கள்", fields:[
+      {id:'fatherName', label:'தந்தையின் பெயர்', type:'text'},
+      {id:'fatherOccupation', label:'தந்தையின் தொழில்', type:'text'},
+      {id:'motherName', label:'தாயாரின் பெயர்', type:'text'},
+      {id:'motherOccupation', label:'தாயாரின் தொழில்', type:'text'},
+      {id:'siblings', label:'சகோதரர்/சகோதரிகள் விவரம்', type:'text'},
+      {id:'familyValues', label:'குடும்ப மதிப்புகள் / பின்னணி', type:'text'},
+    ]},
+    {section:"வாழ்க்கைத் துணை விருப்பங்கள்", fields:[
+      {id:'prefAgeMin', label:'விரும்பும் வயது (குறைந்தபட்சம்)', type:'number'},
+      {id:'prefAgeMax', label:'விரும்பும் வயது (அதிகபட்சம்)', type:'number'},
+      {id:'prefHeight', label:'விரும்பும் உயரம்', type:'text'},
+      {id:'prefReligion', label:'விரும்பும் மதம்/ஜாதி', type:'text'},
+      {id:'prefLocation', label:'விரும்பும் இருப்பிடம்', type:'text'},
+      {id:'prefEducation', label:'எதிர்பார்க்கும் கல்வி/தொழில்', type:'text'},
+      {id:'prefLifestyle', label:'வாழ்க்கை முறை / மதிப்புகள் எதிர்பார்ப்பு', type:'text'},
+    ]},
+    {section:"கூடுதல் விவரங்கள்", fields:[
+      {id:'aboutMe', label:'உங்களைப் பற்றி (About Me)', type:'textarea'},
+    ]},
+  ],
+  realestate: [
+    {section:"சொத்து விவரங்கள்", fields:[
+      {id:'address', label:'முகவரி', type:'text'},
+      {id:'city', label:'நகரம்', type:'text'},
+      {id:'state', label:'மாநிலம்', type:'text'},
+      {id:'pincode', label:'பின் கோடு', type:'text'},
+      {id:'dealType', label:'விற்பனை / வாடகை', type:'select', options:['விற்பனை','வாடகை']},
+      {id:'ptype', label:'சொத்து வகை', type:'select', options:['வீடு','அடுக்குமாடி குடியிருப்பு','வணிகக் கட்டிடம்','நிலம்']},
+      {id:'price', label:'விலை (₹)', type:'text'},
+      {id:'bedrooms', label:'படுக்கையறைகள்', type:'number'},
+      {id:'bathrooms', label:'குளியலறைகள்', type:'number'},
+      {id:'sqft', label:'பரப்பளவு (சதுர அடி)', type:'text'},
+      {id:'plotSize', label:'நிலத்தின் அளவு', type:'text'},
+      {id:'builtYear', label:'கட்டப்பட்ட ஆண்டு', type:'text'},
+      {id:'latitude', label:'Latitude (விருப்பம்)', type:'text'},
+      {id:'longitude', label:'Longitude (விருப்பம்)', type:'text'},
+    ]},
+  ],
+  finance: [
+    {section:"கடன் விவரங்கள்", fields:[
+      {id:'ltype', label:'கடன் வகை', type:'select', options:['தனிநபர் கடன்','வீட்டுக் கடன்','வணிகக் கடன்','தங்க அடமானம்','வாகன கடன்']},
+      {id:'amount', label:'தொகை (₹)', type:'text'},
+    ]},
+  ],
+};
+
+const PUBLIC_HIGHLIGHTS = {
+  matrimony: ['age','height','education','profession','currentCity'],
+  realestate: ['dealType','ptype','price','bedrooms','bathrooms','sqft','city'],
+  finance: ['ltype','amount'],
+};
+
+let state = {
+  selCat: 'matrimony',
+  selType: 'need',
+  selPlan: 'onetime',
+  listings: JSON.parse(localStorage.getItem('dc_listings') || '[]'),
+  users: JSON.parse(localStorage.getItem('dc_users') || '{}'),
+  currentUser: JSON.parse(localStorage.getItem('dc_current_user') || 'null'),
+  scriptUrl: localStorage.getItem('dc_script_url') || '',
+  upiId: localStorage.getItem('dc_upi_id') || '',
+  pendingFiles: {},
+  adminCat: 'matrimony',
+  matchPick: {need:null, provide:null},
+  dashMode: null // null = normal per-category view; {} or {type,status} = global dashboard filter
+};
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function saveListings(){
+  try{
+    localStorage.setItem('dc_listings', JSON.stringify(state.listings));
+    return true;
+  }catch(err){
+    toast('⚠️ சேமிப்பு நிறைந்துவிட்டது! JSON Export எடுத்து பழைய பதிவுகளை நீக்கவும்.');
+    return false;
+  }
+}
+function saveUsers(){ localStorage.setItem('dc_users', JSON.stringify(state.users)); }
+function uid(){ return 'DC' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase(); }
+function simpleHash(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h.toString(36);
+}
+function genRef(category){
+  const now = new Date();
+  const dateStr = now.getFullYear().toString() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+  const key = category+'_'+dateStr;
+  const counters = JSON.parse(localStorage.getItem('dc_counters')||'{}');
+  counters[key] = (counters[key]||0)+1;
+  localStorage.setItem('dc_counters', JSON.stringify(counters));
+  const seq = String(counters[key]).padStart(3,'0');
+  return (REF_PREFIX[category]||'X') + dateStr + seq;
+}
+
+// ==================== AUTH ====================
+document.getElementById('showRegisterBtn').addEventListener('click', ()=>{
+  document.getElementById('showRegisterBtn').classList.add('active');
+  document.getElementById('showLoginBtn').classList.remove('active');
+  document.getElementById('registerCard').style.display='block';
+  document.getElementById('loginCard').style.display='none';
+});
+document.getElementById('showLoginBtn').addEventListener('click', ()=>{
+  document.getElementById('showLoginBtn').classList.add('active');
+  document.getElementById('showRegisterBtn').classList.remove('active');
+  document.getElementById('loginCard').style.display='block';
+  document.getElementById('registerCard').style.display='none';
+});
+
+document.getElementById('registerBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('reg_name').value.trim();
+  const phone = document.getElementById('reg_phone').value.trim();
+  const service = document.getElementById('reg_service').value;
+  const pw = document.getElementById('reg_pw').value;
+  const pw2 = document.getElementById('reg_pw2').value;
+  if(!name || phone.length<10){ toast('பெயர் மற்றும் சரியான செல் நம்பரை பதிவு செய்யவும்'); return; }
+  if(pw.length<4){ toast('பாஸ்வேர்ட் குறைந்தது 4 எழுத்துகள் இருக்கணும்'); return; }
+  if(pw!==pw2){ toast('பாஸ்வேர்ட் பொருந்தவில்லை'); return; }
+  if(state.users[phone]){ toast('இந்த நம்பர் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது — உள்நுழையவும்'); return; }
+  state.users[phone] = { name, phone, service, pwHash: simpleHash(pw), createdAt: new Date().toISOString() };
+  saveUsers();
+  pushUserToCloud(state.users[phone]);
+  loginAs(state.users[phone]);
+});
+
+document.getElementById('loginBtn').addEventListener('click', ()=>{
+  const phone = document.getElementById('login_phone').value.trim();
+  const pw = document.getElementById('login_pw').value;
+  const u = state.users[phone];
+  if(!u || u.pwHash !== simpleHash(pw)){ toast('செல் நம்பர் அல்லது பாஸ்வேர்ட் தவறு'); return; }
+  loginAs(u);
+});
+
+function loginAs(user){
+  state.currentUser = user;
+  localStorage.setItem('dc_current_user', JSON.stringify(user));
+  document.getElementById('authGate').style.display='none';
+  document.getElementById('appRoot').style.display='block';
+  document.getElementById('userNameLabel').textContent = user.name;
+  document.getElementById('f_name').value = user.name;
+  document.getElementById('f_phone').value = user.phone;
+  if(user.service){
+    state.selCat = user.service;
+    document.querySelectorAll('#catGrid button').forEach(x=>x.classList.toggle('sel', x.dataset.cat===user.service));
+    renderDynFields(); renderFileFields(); togglePayment();
+  }
+  toast('வணக்கம் ' + user.name + '!');
+}
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  state.currentUser = null;
+  localStorage.removeItem('dc_current_user');
+  document.getElementById('appRoot').style.display='none';
+  document.getElementById('authGate').style.display='block';
+});
+
+if(state.currentUser && state.users[state.currentUser.phone]){
+  loginAs(state.users[state.currentUser.phone]);
+}
+
+// -------- Tabs --------
+document.getElementById('mainNav').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['submit','browse','admin'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = (t===btn.dataset.tab)?'block':'none';
+  });
+  if(btn.dataset.tab==='browse') renderBrowse();
+  if(btn.dataset.tab==='admin' && document.getElementById('adminPanel').style.display==='block') renderAdmin();
+});
+
+// -------- Submit form: category / type --------
+document.getElementById('catGrid').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-cat]'); if(!b) return;
+  state.selCat = b.dataset.cat;
+  document.querySelectorAll('#catGrid button').forEach(x=>x.classList.toggle('sel', x===b));
+  renderDynFields(); renderFileFields(); togglePayment();
+});
+document.getElementById('typeGrid').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-type]'); if(!b) return;
+  state.selType = b.dataset.type;
+  document.querySelectorAll('#typeGrid button').forEach(x=>x.classList.toggle('sel', x===b));
+  togglePayment();
+});
+document.getElementById('planGrid').addEventListener('click', e=>{
+  const c = e.target.closest('.plan-card'); if(!c) return;
+  state.selPlan = c.dataset.plan;
+  document.querySelectorAll('.plan-card').forEach(x=>x.classList.toggle('sel', x===c));
+  updatePayBox();
+});
+
+function inputHtml(f, prefix){
+  const id = (prefix||'fx_') + f.id;
+  if(f.type==='select'){
+    return `<label>${f.label}</label><select id="${id}">${f.options.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+  }
+  if(f.type==='textarea'){
+    return `<label>${f.label}</label><textarea id="${id}" placeholder="${f.label}"></textarea>`;
+  }
+  return `<label>${f.label}</label><input id="${id}" type="${f.type}" placeholder="${f.label}">`;
+}
+function renderDynFields(){
+  const c = document.getElementById('dynFields');
+  const groups = FIELD_CONFIG[state.selCat] || [];
+  let html = '';
+  groups.forEach((g, idx)=>{
+    const open = idx===0 ? ' open' : '';
+    if(groups.length>1){
+      html += `<details class="fsec"${open}><summary>${g.section}</summary><div class="fsec-body">`;
+      html += g.fields.map(f=>inputHtml(f)).join('');
+      html += `</div></details>`;
+    } else {
+      html += g.fields.map(f=>inputHtml(f)).join('');
+    }
+  });
+  c.innerHTML = html;
+}
+renderDynFields();
+
+function collectExtra(prefix){
+  const groups = FIELD_CONFIG[state.selCat] || [];
+  const out = {};
+  groups.forEach(g=>{
+    g.fields.forEach(f=>{
+      const el = document.getElementById((prefix||'fx_') + f.id);
+      if(el) out[f.id] = el.value;
+    });
+  });
+  return out;
+}
+
+// -------- File / photo fields --------
+function renderFileFields(){
+  const c = document.getElementById('fileFields');
+  state.pendingFiles = {};
+  let html = '';
+  if(state.selCat==='matrimony'){
+    html += `<label>புகைப்படங்கள் (மணமகன்/மணமகள்) — 2 வரை</label>
+      <input type="file" accept="image/*" id="f_photo1">
+      <input type="file" accept="image/*" id="f_photo2" style="margin-top:6px">
+      <div class="thumb-row" id="photoPreview"></div>
+      <label>ஜாதகம் (கோப்பு — படம் / PDF, அதிகபட்சம் ${MAX_FILE_MB}MB)</label>
+      <input type="file" accept="image/*,.pdf" id="f_horoscope">
+      <div id="horoscopePreview"></div>`;
+  } else if(state.selCat==='realestate'){
+    html += `<label>புகைப்படங்கள் (சொத்து) — 2 வரை</label>
+      <input type="file" accept="image/*" id="f_photo1">
+      <input type="file" accept="image/*" id="f_photo2" style="margin-top:6px">
+      <div class="thumb-row" id="photoPreview"></div>`;
+  } else if(state.selCat==='finance'){
+    html += `<label>ஆவணம் (கோப்பு — படம் / PDF, அதிகபட்சம் ${MAX_FILE_MB}MB)</label>
+      <input type="file" accept="image/*,.pdf" id="f_document">
+      <div id="documentPreview"></div>`;
+  }
+  c.innerHTML = html;
+
+  const readAsCompressedImage = (file, cb) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 800;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale; canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        cb(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  const readAsRaw = (file, cb) => {
+    const reader = new FileReader();
+    reader.onload = ev => cb(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+  const checkSize = (file) => {
+    if(file.size > MAX_FILE_MB*1024*1024){
+      toast(`⚠️ கோப்பு அளவு பெரியது — ${MAX_FILE_MB}MB-க்குள் இருக்கும் கோப்பை பதிவேற்றவும்`);
+      return false;
+    }
+    return true;
+  };
+
+  ['f_photo1','f_photo2'].forEach((id,idx)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('change', ()=>{
+      const file = el.files[0]; if(!file) return;
+      if(!checkSize(file)){ el.value=''; return; }
+      readAsCompressedImage(file, dataUrl=>{
+        state.pendingFiles['photo'+(idx+1)] = dataUrl;
+        const prev = document.getElementById('photoPreview');
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        prev.appendChild(img);
+        toast('படம் இணைக்கப்பட்டது');
+      });
+    });
+  });
+  const horo = document.getElementById('f_horoscope');
+  if(horo){
+    horo.addEventListener('change', ()=>{
+      const file = horo.files[0]; if(!file) return;
+      if(!checkSize(file)){ horo.value=''; return; }
+      const handler = file.type.startsWith('image/') ? readAsCompressedImage : readAsRaw;
+      handler(file, dataUrl=>{
+        state.pendingFiles.horoscope = dataUrl;
+        document.getElementById('horoscopePreview').innerHTML = `<span class="file-chip">📎 ${file.name}</span>`;
+        toast('ஜாதகம் இணைக்கப்பட்டது');
+      });
+    });
+  }
+  const doc = document.getElementById('f_document');
+  if(doc){
+    doc.addEventListener('change', ()=>{
+      const file = doc.files[0]; if(!file) return;
+      if(!checkSize(file)){ doc.value=''; return; }
+      const handler = file.type.startsWith('image/') ? readAsCompressedImage : readAsRaw;
+      handler(file, dataUrl=>{
+        state.pendingFiles.document = dataUrl;
+        document.getElementById('documentPreview').innerHTML = `<span class="file-chip">📎 ${file.name}</span>`;
+        toast('ஆவணம் இணைக்கப்பட்டது');
+      });
+    });
+  }
+}
+renderFileFields();
+
+function togglePayment(){
+  document.getElementById('paymentSection').style.display = (state.selType==='need') ? 'block' : 'none';
+  if(state.selType==='need') updatePayBox();
+}
+function updatePayBox(){
+  const amt = PLAN_AMOUNT[state.selPlan];
+  document.getElementById('payAmountLabel').textContent = '₹' + amt;
+  const upi = state.upiId || 'UPI-ID-SET-BY-ADMIN@upi';
+  const note = 'DhassConnect-' + state.selPlan;
+  const upiUri = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent('Dhass Public Service Center')}&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`;
+  document.getElementById('upiLink').href = upiUri;
+  document.getElementById('qrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(upiUri);
+}
+togglePayment();
+
+// -------- Submit (with duplicate-prevention + confirmation screen) --------
+let submitting = false;
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+  if(submitting) return; // guard against double click
+  const name = document.getElementById('f_name').value.trim();
+  const phone = document.getElementById('f_phone').value.trim();
+  const place = document.getElementById('f_place').value.trim();
+  const details = document.getElementById('f_details').value.trim();
+  if(!name || !phone || phone.length<10){ toast('பெயர் மற்றும் சரியான தொலைபேசி எண்ணை பதிவு செய்யவும்'); return; }
+
+  const extra = collectExtra();
+
+  let payment = null;
+  if(state.selType==='need'){
+    const utr = document.getElementById('f_utr').value.trim();
+    if(!utr){ toast('Payment செய்த பின் UPI Reference எண்ணை பதிவு செய்யவும்'); return; }
+    payment = { plan: state.selPlan, amount: PLAN_AMOUNT[state.selPlan], utr, status:'unpaid' };
+  }
+
+  submitting = true;
+  document.getElementById('submitBtn').disabled = true;
+
+  const ref = genRef(state.selCat);
+  const rec = {
+    id: uid(), ref, category: state.selCat, type: state.selType,
+    name, phone, place, details, extra,
+    files: state.pendingFiles,
+    payment,
+    status: 'pending', matchedWith: null,
+    createdAt: new Date().toISOString()
+  };
+  state.listings.unshift(rec);
+  const ok = saveListings();
+  submitting = false;
+  document.getElementById('submitBtn').disabled = false;
+  if(!ok) return;
+  pushToCloud(rec);
+
+  // show confirmation screen so the user knows it worked (prevents re-submission)
+  document.getElementById('submitFormCard').style.display = 'none';
+  document.getElementById('confirmScreen').style.display = 'block';
+  document.getElementById('confirmRef').textContent = ref;
+});
+
+document.getElementById('confirmOkBtn').addEventListener('click', ()=>{
+  document.getElementById('confirmScreen').style.display = 'none';
+  document.getElementById('submitFormCard').style.display = 'block';
+  document.getElementById('f_place').value='';
+  document.getElementById('f_details').value='';
+  const utrEl = document.getElementById('f_utr'); if(utrEl) utrEl.value='';
+  renderDynFields(); renderFileFields(); togglePayment();
+});
+
+// ==================== BROWSE (public) ====================
+function fieldValue(cat, id, extra){
+  const groups = FIELD_CONFIG[cat] || [];
+  for(const g of groups){
+    const f = g.fields.find(x=>x.id===id);
+    if(f) return {label:f.label, value: extra[id]};
+  }
+  return null;
+}
+function highlightsLine(r){
+  const ids = PUBLIC_HIGHLIGHTS[r.category] || [];
+  const parts = [];
+  ids.forEach(id=>{
+    const fv = fieldValue(r.category, id, r.extra||{});
+    if(fv && fv.value) parts.push(`${fv.label}: ${fv.value}`);
+  });
+  return parts.join(' | ');
+}
+function fullFieldsHtml(r){
+  const groups = FIELD_CONFIG[r.category] || [];
+  let html = '';
+  groups.forEach(g=>{
+    const lines = g.fields
+      .filter(f=> r.extra && r.extra[f.id])
+      .map(f=>`<div class="kv"><b>${f.label}:</b> ${r.extra[f.id]}</div>`).join('');
+    if(lines) html += `<div style="margin-top:6px"><b style="font-size:12px;color:var(--primary-dark)">${g.section}</b>${lines}</div>`;
+  });
+  return html;
+}
+function photoStrip(r){
+  const f = r.files||{};
+  const imgs = [f.photo1, f.photo2].filter(Boolean);
+  if(!imgs.length) return '';
+  return `<div class="thumb-row">${imgs.map(src=>`<img src="${src}">`).join('')}</div>`;
+}
+function renderBrowse(){
+  const cat = document.getElementById('browseCat').value;
+  const typ = document.getElementById('browseType').value;
+  const list = state.listings.filter(r=>
+    (r.status==='approved' || r.status==='matched') &&
+    (!cat || r.category===cat) && (!typ || r.type===typ)
+  );
+  const box = document.getElementById('browseList');
+  if(!list.length){ box.innerHTML = '<div class="card empty">பொருத்தமான பதிவுகள் இல்லை</div>'; return; }
+  box.innerHTML = list.map(r=>`
+    <div class="listing">
+      <div class="top">
+        <span>${CAT_LABEL[r.category]} · <span class="ref-chip">${r.ref||''}</span></span>
+        <span class="badge ${r.type}">${TYPE_LABEL[r.type]}</span>
+      </div>
+      <h4>${r.name} <span style="font-weight:400;font-size:13px;color:var(--muted)">— ${r.place||''}</span></h4>
+      <div class="meta">${highlightsLine(r)}</div>
+      <div>${r.details||''}</div>
+      ${r.category==='matrimony' && r.extra && r.extra.aboutMe ? `<div class="note">"${r.extra.aboutMe}"</div>` : ''}
+      ${photoStrip(r)}
+      <div class="note">📞 விவரங்களுக்கு தாஸ் பொது சேவை மையத்தை தொடர்பு கொள்ளவும்</div>
+    </div>
+  `).join('');
+}
+document.getElementById('browseCat').addEventListener('change', renderBrowse);
+document.getElementById('browseType').addEventListener('change', renderBrowse);
+
+// ==================== ADMIN ====================
+document.getElementById('adminLoginBtn').addEventListener('click', ()=>{
+  if(document.getElementById('adminPw').value === ADMIN_PASSWORD){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    document.getElementById('scriptUrl').value = state.scriptUrl;
+    document.getElementById('upiId').value = state.upiId;
+    renderAdmin();
+  } else toast('தவறான கடவுச்சொல்');
+});
+
+document.getElementById('ulSearchBtn').addEventListener('click', ()=>{
+  const phone = document.getElementById('ulPhone').value.trim();
+  const box = document.getElementById('ulResult');
+  const u = state.users[phone];
+  if(!u){ box.innerHTML = '<div class="note">இந்த நம்பருக்கு கணக்கு எதுவும் கிடைக்கவில்லை (இந்த சாதனத்தில் register ஆகி இருக்கணும், அல்லது Sync பண்ணி பாருங்க)</div>'; return; }
+  box.innerHTML = `<div class="found">
+    <b>${u.name}</b> — ${CAT_LABEL[u.service]||u.service}<br>
+    <label>புதிய பாஸ்வேர்ட்</label>
+    <input id="ulNewPw" placeholder="குறைந்தது 4 எழுத்துகள்">
+    <div class="row"><button class="btn small gold" id="ulResetBtn">🔑 பாஸ்வேர்ட் மீட்டமை</button></div>
+  </div>`;
+  document.getElementById('ulResetBtn').addEventListener('click', ()=>{
+    const pw = document.getElementById('ulNewPw').value;
+    if(pw.length<4){ toast('பாஸ்வேர்ட் குறைந்தது 4 எழுத்துகள் இருக்கணும்'); return; }
+    u.pwHash = simpleHash(pw);
+    saveUsers();
+    pushUserToCloud(u);
+    toast('✅ பாஸ்வேர்ட் மீட்டமைக்கப்பட்டது — வாடிக்கையாளரிடம் புதிய பாஸ்வேர்ட் தெரிவிக்கவும்');
+    document.getElementById('ulPhone').value='';
+    box.innerHTML='';
+  });
+});
+
+document.getElementById('adminCatTabs').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-cat]'); if(!b) return;
+  state.adminCat = b.dataset.cat;
+  document.querySelectorAll('#adminCatTabs button').forEach(x=>x.classList.toggle('active', x===b));
+  state.matchPick = {need:null, provide:null};
+  state.dashMode = null;
+  renderAdmin();
+});
+document.getElementById('dashExitBtn').addEventListener('click', ()=>{
+  state.dashMode = null;
+  renderAdmin();
+});
+document.getElementById('reportSearch').addEventListener('input', renderAdmin);
+document.getElementById('adminStatusFilter').addEventListener('change', renderAdmin);
+
+function waLink(phone, msg){
+  let p = phone.replace(/\D/g,'');
+  if(p.length===10) p = '91'+p;
+  return `https://wa.me/${p}?text=${encodeURIComponent(msg)}`;
+}
+
+function renderAdmin(){
+  renderDashboard();
+  renderStats();
+  renderMatchBoard();
+  renderReportTable();
+}
+
+function computeGlobalCounts(){
+  const all = state.listings;
+  return {
+    total: all.length,
+    need: all.filter(r=>r.type==='need').length,
+    provide: all.filter(r=>r.type==='provide').length,
+    matched: all.filter(r=>r.status==='matched').length,
+    notmatched: all.filter(r=>r.status==='approved' && !r.matchedWith).length,
+    success: all.filter(r=>r.status==='completed').length,
+  };
+}
+
+function renderDashboard(){
+  const c = computeGlobalCounts();
+  const isActive = (kind) => JSON.stringify(state.dashMode) === JSON.stringify(kind);
+  const box = (kind, n, label) => `<div class="dash-box ${isActive(kind)?'active':''}" onclick='setDashFilter(${JSON.stringify(kind)})'><div class="n">${n}</div><div class="l">${label}</div></div>`;
+  document.getElementById('dashGrid').innerHTML =
+    box({}, c.total, 'மொத்த பதிவு') +
+    box({type:'need'}, c.need, 'தேவை') +
+    box({type:'provide'}, c.provide, 'வழங்குபவர்') +
+    box({status:'matched'}, c.matched, 'மேட்ச்') +
+    box({status:'notmatched'}, c.notmatched, 'நாட் மேட்ச்') +
+    box({status:'completed'}, c.success, 'சக்சஸ்');
+  document.getElementById('dashExitWrap').style.display = state.dashMode ? 'block' : 'none';
+}
+function setDashFilter(kind){
+  state.dashMode = kind;
+  renderDashboard();
+  renderReportTable();
+}
+
+function renderStats(){
+  const list = state.listings.filter(r=>r.category===state.adminCat);
+  const counts = {pending:0, approved:0, matched:0, rejected:0};
+  list.forEach(r=> counts[r.status] = (counts[r.status]||0)+1 );
+  const box = document.getElementById('adminStats');
+  box.innerHTML = `
+    <div class="stat-box"><div class="n">${list.length}</div><div class="l">மொத்தம்</div></div>
+    <div class="stat-box"><div class="n">${counts.pending||0}</div><div class="l">நிலுவையில்</div></div>
+    <div class="stat-box"><div class="n">${counts.approved||0}</div><div class="l">அனுமதிக்கப்பட்டது</div></div>
+    <div class="stat-box"><div class="n">${counts.matched||0}</div><div class="l">பொருத்தப்பட்டது</div></div>
+  `;
+}
+
+function renderMatchBoard(){
+  const cat = state.adminCat;
+  const needs = state.listings.filter(r=>r.category===cat && r.type==='need' && r.status==='approved');
+  const provides = state.listings.filter(r=>r.category===cat && r.type==='provide' && r.status==='approved');
+  const box = document.getElementById('matchBoard');
+
+  const itemHtml = (r, side) => `
+    <div class="match-item ${state.matchPick[side]===r.id?'picked':''}" onclick="pickMatch('${side}','${r.id}')">
+      <b>${r.name}</b> <span class="ref-chip">${r.ref||''}</span><br>
+      ${highlightsLine(r) || r.place || ''}
+    </div>`;
+
+  box.innerHTML = `
+    <div class="match-col need">
+      <h5>🔴 தேவை (${needs.length})</h5>
+      ${needs.length ? needs.map(r=>itemHtml(r,'need')).join('') : '<div class="empty" style="padding:10px">இல்லை</div>'}
+    </div>
+    <div class="match-col provide">
+      <h5>🟢 வழங்குபவர் (${provides.length})</h5>
+      ${provides.length ? provides.map(r=>itemHtml(r,'provide')).join('') : '<div class="empty" style="padding:10px">இல்லை</div>'}
+    </div>
+  `;
+  document.getElementById('matchBar').classList.toggle('show', !!(state.matchPick.need && state.matchPick.provide));
+}
+
+function pickMatch(side, id){
+  state.matchPick[side] = (state.matchPick[side]===id) ? null : id;
+  renderMatchBoard();
+}
+document.getElementById('matchClearBtn').addEventListener('click', ()=>{
+  state.matchPick = {need:null, provide:null};
+  renderMatchBoard();
+});
+document.getElementById('matchGoBtn').addEventListener('click', ()=>{
+  const a = state.listings.find(x=>x.id===state.matchPick.need);
+  const b = state.listings.find(x=>x.id===state.matchPick.provide);
+  if(!a || !b) return;
+  a.status='matched'; a.matchedWith=b.id;
+  b.status='matched'; b.matchedWith=a.id;
+  saveListings(); pushToCloud(a); pushToCloud(b);
+  state.matchPick = {need:null, provide:null};
+  toast('🔗 பொருத்தப்பட்டது! WhatsApp அனுப்ப மறக்காதீர்கள்');
+  renderAdmin();
+});
+
+function renderReportTable(){
+  const q = document.getElementById('reportSearch').value.trim().toLowerCase();
+  let list;
+  const dashActive = !!state.dashMode;
+
+  if(dashActive){
+    list = state.listings.slice();
+    if(state.dashMode.type) list = list.filter(r=>r.type===state.dashMode.type);
+    if(state.dashMode.status==='notmatched') list = list.filter(r=>r.status==='approved' && !r.matchedWith);
+    else if(state.dashMode.status) list = list.filter(r=>r.status===state.dashMode.status);
+  } else {
+    const cat = state.adminCat;
+    const sf = document.getElementById('adminStatusFilter').value;
+    list = state.listings.filter(r=> r.category===cat && (!sf||r.status===sf));
+  }
+  if(q){
+    list = list.filter(r=> (r.name||'').toLowerCase().includes(q) || (r.phone||'').includes(q) || (r.ref||'').toLowerCase().includes(q));
+  }
+  const table = document.getElementById('reportTable');
+  if(!list.length){
+    table.innerHTML = '<tr><td style="padding:20px;text-align:center;color:var(--muted)">பதிவுகள் இல்லை</td></tr>';
+    return;
+  }
+  const catCol = dashActive ? '<th>துறை</th>' : '';
+  const rows = list.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><span class="ref-chip">${r.ref||'-'}</span></td>
+      ${dashActive ? `<td>${CAT_LABEL[r.category]}</td>` : ''}
+      <td>${r.name}</td>
+      <td>${r.phone}</td>
+      <td><span class="badge ${r.type}">${TYPE_LABEL[r.type]}</span></td>
+      <td><span class="badge ${r.status}">${STATUS_LABEL[r.status]}</span></td>
+      <td>${new Date(r.createdAt).toLocaleDateString('ta-IN')}</td>
+      <td>
+        <button class="btn small icon" onclick="openDetail('${r.id}')" title="விவரம்">🔍</button>
+        <button class="btn small icon secondary" onclick="openEdit('${r.id}')" title="திருத்து">✏️</button>
+        <button class="btn small icon wa" onclick="waDirect('${r.id}')" title="WhatsApp">📲</button>
+        <button class="btn small icon danger" onclick="deleteRecord('${r.id}')" title="நீக்கு">🗑️</button>
+      </td>
+    </tr>`).join('');
+  table.innerHTML = `
+    <thead><tr>
+      <th>#</th><th>குறிப்பு எண்</th>${catCol}<th>பெயர்</th><th>செல்</th><th>வகை</th><th>நிலை</th><th>தேதி</th><th>செயல்கள்</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+
+function waDirect(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  const msg = `வணக்கம் ${r.name} அவர்களே,\nதாஸ் இணைப்பு சேவையில் உங்கள் பதிவு (${r.ref}) குறித்து தொடர்பு கொள்கிறோம். நன்றி!\n- தாஸ் பொது சேவை மையம்`;
+  window.open(waLink(r.phone, msg), '_blank');
+}
+
+function deleteRecord(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  if(!confirm(`"${r.name}" (${r.ref}) பதிவை நிரந்தரமாக நீக்கவா?`)) return;
+  state.listings = state.listings.filter(x=>x.id!==id);
+  saveListings();
+  renderAdmin();
+  toast('நீக்கப்பட்டது');
+}
+
+// -------- Detail modal --------
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+
+function openDetail(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  const partner = r.matchedWith ? state.listings.find(x=>x.id===r.matchedWith) : null;
+
+  let payHtml = '';
+  if(r.type==='need' && r.payment){
+    const p = r.payment;
+    payHtml = `<div class="paystatus-row">
+      <span>💳 ${PLAN_LABEL[p.plan]} | UTR: ${p.utr}</span>
+      <span class="badge ${p.status==='paid'?'paid':'unpaid'}">${p.status==='paid'?'செலுத்தப்பட்டது':'சரிபார்க்கவும்'}</span>
+    </div>`;
+    if(p.status!=='paid'){
+      payHtml += `<div class="row"><button class="btn small gold" onclick="verifyPayment('${r.id}')">✅ கட்டணம் உறுதி செய்</button></div>`;
+    }
+  }
+
+  let filesHtml = '';
+  if(r.files){
+    const chips = [];
+    if(r.files.photo1 || r.files.photo2) chips.push(`<div class="thumb-row">${[r.files.photo1,r.files.photo2].filter(Boolean).map(s=>`<img src="${s}">`).join('')}</div>`);
+    if(r.files.horoscope) chips.push(`<span class="file-chip">📎 ஜாதகம் <a href="${r.files.horoscope}" download="jathagam">பார்க்க</a></span>`);
+    if(r.files.document) chips.push(`<span class="file-chip">📎 ஆவணம் <a href="${r.files.document}" download="document">பார்க்க</a></span>`);
+    filesHtml = chips.join(' ');
+  }
+
+  const paymentBlocksApproval = (r.type==='need' && r.payment && r.payment.status!=='paid');
+  let statusActions = '';
+  if(r.status==='pending'){
+    statusActions = `<button class="btn small" ${paymentBlocksApproval?'disabled':''} onclick="setStatus('${r.id}','approved');openDetail('${r.id}')">✅ அனுமதி</button>
+                      <button class="btn small danger" onclick="setStatus('${r.id}','rejected');openDetail('${r.id}')">❌ நிராகரி</button>`;
+  } else if(r.status==='rejected' || r.status==='approved'){
+    statusActions = `<button class="btn small secondary" onclick="setStatus('${r.id}','pending');openDetail('${r.id}')">↩️ நிலுவைக்கு மாற்று</button>`;
+  } else if(r.status==='matched'){
+    statusActions = `<button class="btn small gold" onclick="setStatus('${r.id}','completed');openDetail('${r.id}')">✅ வெற்றி (Success) குறிக்க</button>`;
+  } else if(r.status==='completed'){
+    statusActions = `<span class="badge completed">🎉 வெற்றிகரமாக முடிந்தது</span>`;
+  }
+
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeModal()">✖</button>
+        <h3>${r.name} <span class="ref-chip">${r.ref||''}</span></h3>
+        <div class="meta">${CAT_LABEL[r.category]} · <span class="badge ${r.type}">${TYPE_LABEL[r.type]}</span> · <span class="badge ${r.status}">${STATUS_LABEL[r.status]}</span></div>
+        <p><b>செல்:</b> ${r.phone} &nbsp; <b>ஊர்:</b> ${r.place||'-'}</p>
+        <p>${r.details||''}</p>
+        ${filesHtml}
+        ${fullFieldsHtml(r)}
+        ${payHtml}
+        ${partner ? `<div class="note">🔗 பொருத்தப்பட்டவர்: ${partner.name} - ${partner.phone}</div>` : ''}
+        <div class="row" style="margin-top:14px">
+          ${statusActions}
+          <button class="btn small secondary" onclick="closeModal();openEdit('${r.id}')">✏️ திருத்து</button>
+          <button class="btn small wa" onclick="waDirect('${r.id}')">📲 WhatsApp</button>
+        </div>
+        <div class="row">
+          <button class="btn small secondary" onclick="printResume('${r.id}')">🖨️ பிரிண்ட் (Resume)</button>
+          <button class="btn small wa" onclick="sendResumeWa('${r.id}')">📲 Resume WhatsApp அனுப்பு</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+
+// -------- Print / Resume --------
+function resumeTextBlock(r){
+  const groups = FIELD_CONFIG[r.category] || [];
+  let lines = [`*${r.name}* (${r.ref||''})`, `${CAT_LABEL[r.category]} — ${TYPE_LABEL[r.type]}`, `ஊர்: ${r.place||'-'}`, ''];
+  if(r.details) lines.push(r.details, '');
+  groups.forEach(g=>{
+    const fl = g.fields.filter(f=> r.extra && r.extra[f.id]);
+    if(fl.length){
+      lines.push(`*${g.section}*`);
+      fl.forEach(f=> lines.push(`${f.label}: ${r.extra[f.id]}`));
+      lines.push('');
+    }
+  });
+  lines.push('- தாஸ் பொது சேவை மையம்');
+  return lines.join('\n');
+}
+
+function printResume(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  const photos = [r.files && r.files.photo1, r.files && r.files.photo2].filter(Boolean);
+  const groups = FIELD_CONFIG[r.category] || [];
+  let sectionsHtml = '';
+  groups.forEach(g=>{
+    const rows = g.fields.filter(f=> r.extra && r.extra[f.id])
+      .map(f=>`<tr><td class="lbl">${f.label}</td><td>${r.extra[f.id]}</td></tr>`).join('');
+    if(rows) sectionsHtml += `<h3>${g.section}</h3><table class="rt">${rows}</table>`;
+  });
+  const html = `<!DOCTYPE html><html lang="ta"><head><meta charset="UTF-8"><title>${r.name} - ${r.ref}</title>
+  <style>
+    body{font-family:'Noto Sans Tamil','Latha',sans-serif;padding:30px;color:#1e2a26;max-width:700px;margin:0 auto;}
+    .rhead{text-align:center;border-bottom:3px solid #0b6e4f;padding-bottom:16px;margin-bottom:16px;}
+    .rhead h1{margin:0;color:#084d38;}
+    .rhead .ref{font-family:monospace;color:#6b7a75;}
+    .photos{display:flex;justify-content:center;gap:10px;margin:14px 0;}
+    .photos img{width:140px;height:140px;object-fit:cover;border-radius:8px;border:2px solid #e1e6e4;}
+    h3{color:#084d38;border-bottom:1px solid #e1e6e4;padding-bottom:4px;margin-top:20px;}
+    table.rt{width:100%;border-collapse:collapse;font-size:14px;}
+    table.rt td{padding:5px 4px;border-bottom:1px solid #f0f0f0;}
+    table.rt td.lbl{color:#6b7a75;width:45%;}
+    .footer{margin-top:24px;text-align:center;font-size:12px;color:#6b7a75;border-top:1px solid #e1e6e4;padding-top:10px;}
+    @media print{ .noprint{display:none} }
+  </style></head><body>
+    <div class="rhead"><h1>${r.name}</h1><div class="ref">${r.ref||''} · ${CAT_LABEL[r.category]} · ${TYPE_LABEL[r.type]}</div></div>
+    ${photos.length ? `<div class="photos">${photos.map(p=>`<img src="${p}">`).join('')}</div>` : ''}
+    <table class="rt"><tr><td class="lbl">ஊர்</td><td>${r.place||'-'}</td></tr>${r.details?`<tr><td class="lbl">விவரம்</td><td>${r.details}</td></tr>`:''}</table>
+    ${sectionsHtml}
+    <div class="footer">தாஸ் பொது சேவை மையம் — தாஸ் இணைப்பு சேவை</div>
+    <div class="noprint" style="text-align:center;margin-top:20px"><button onclick="window.print()" style="padding:10px 20px;font-size:15px">🖨️ Print</button></div>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
+function sendResumeWa(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  const target = prompt('எந்த நம்பருக்கு Resume அனுப்பணும்?', r.phone || '');
+  if(!target) return;
+  const text = resumeTextBlock(r);
+  window.open(waLink(target, text), '_blank');
+}
+
+function verifyPayment(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r || !r.payment) return;
+  r.payment.status = 'paid';
+  saveListings(); pushToCloud(r);
+  toast('💳 கட்டணம் உறுதி செய்யப்பட்டது');
+  renderAdmin();
+}
+
+function setStatus(id, status){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  if(status==='approved' && r.type==='need' && r.payment && r.payment.status!=='paid'){
+    toast('முதலில் கட்டணத்தை உறுதி செய்யவும்'); return;
+  }
+  r.status = status;
+  saveListings(); pushToCloud(r);
+  renderAdmin();
+  toast('நிலை புதுப்பிக்கப்பட்டது');
+}
+
+// -------- Edit modal --------
+function openEdit(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  const groups = FIELD_CONFIG[r.category] || [];
+  let fieldsHtml = '';
+  groups.forEach(g=>{
+    fieldsHtml += `<div style="margin-top:8px"><b style="font-size:12px;color:var(--primary-dark)">${g.section}</b>`;
+    fieldsHtml += g.fields.map(f=>inputHtml(f,'ex_')).join('');
+    fieldsHtml += `</div>`;
+  });
+
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeModal()">✖</button>
+        <h3>திருத்து — ${r.ref||''}</h3>
+        <label>பெயர்</label><input id="ex_name" value="${r.name||''}">
+        <label>செல் நம்பர்</label><input id="ex_phone" value="${r.phone||''}">
+        <label>ஊர்</label><input id="ex_place" value="${r.place||''}">
+        <label>கூடுதல் விவரம்</label><textarea id="ex_details">${r.details||''}</textarea>
+        ${fieldsHtml}
+        <div class="row" style="margin-top:14px">
+          <button class="btn small" onclick="saveEdit('${r.id}')">💾 சேமி</button>
+          <button class="btn small secondary" onclick="closeModal()">ரத்து செய்</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('modalRoot').innerHTML = html;
+
+  // prefill values after inserting into DOM
+  const groups2 = FIELD_CONFIG[r.category] || [];
+  groups2.forEach(g=> g.fields.forEach(f=>{
+    const el = document.getElementById('ex_'+f.id);
+    if(el && r.extra && r.extra[f.id]!==undefined) el.value = r.extra[f.id];
+  }));
+}
+
+function saveEdit(id){
+  const r = state.listings.find(x=>x.id===id);
+  if(!r) return;
+  r.name = document.getElementById('ex_name').value.trim();
+  r.phone = document.getElementById('ex_phone').value.trim();
+  r.place = document.getElementById('ex_place').value.trim();
+  r.details = document.getElementById('ex_details').value.trim();
+  const groups = FIELD_CONFIG[r.category] || [];
+  const extra = {};
+  groups.forEach(g=> g.fields.forEach(f=>{
+    const el = document.getElementById('ex_'+f.id);
+    if(el) extra[f.id] = el.value;
+  }));
+  r.extra = extra;
+  saveListings(); pushToCloud(r);
+  closeModal();
+  renderAdmin();
+  toast('✅ மாற்றங்கள் சேமிக்கப்பட்டது');
+}
+
+function dataUrlToFile(dataUrl, filename){
+  const arr = dataUrl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while(n--) u8arr[n] = bstr.charCodeAt(n);
+  return new File([u8arr], filename, {type: mime});
+}
+
+async function sharePhotos(id){
+  const r = state.listings.find(x=>x.id===id);
+  const p = state.listings.find(x=>x.id===r.matchedWith);
+  if(!r || !p || !p.files) return;
+  const imgs = [p.files.photo1, p.files.photo2].filter(Boolean);
+  if(!imgs.length){ toast('படங்கள் இல்லை'); return; }
+  const files = imgs.map((dataUrl,i)=> dataUrlToFile(dataUrl, `${p.name}_photo${i+1}.jpg`));
+  if(navigator.canShare && navigator.canShare({files})){
+    try{
+      await navigator.share({ files, title: p.name + ' - படங்கள்', text: `${p.name} அவர்களின் புகைப்படங்கள்` });
+      toast('பகிரப்பட்டது');
+      return;
+    }catch(err){ if(err && err.name === 'AbortError') return; }
+  }
+  imgs.forEach((dataUrl, i)=>{
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `${p.name}_photo${i+1}.jpg`;
+    a.click();
+  });
+  toast('படங்கள் பதிவிறக்கம் ஆகின — WhatsApp-ல் நேரடியா attach செய்யவும்');
+}
+
+// -------- Export / Import --------
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state.listings, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dhass_connect_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+});
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(Array.isArray(data)){ state.listings = data; saveListings(); renderAdmin(); toast('Import வெற்றி'); }
+    }catch(err){ toast('Import தோல்வி: தவறான கோப்பு'); }
+  };
+  reader.readAsText(file);
+});
+
+// -------- Settings / Cloud sync --------
+document.getElementById('saveSettingsBtn').addEventListener('click', ()=>{
+  state.scriptUrl = document.getElementById('scriptUrl').value.trim();
+  state.upiId = document.getElementById('upiId').value.trim();
+  localStorage.setItem('dc_script_url', state.scriptUrl);
+  localStorage.setItem('dc_upi_id', state.upiId);
+  toast('அமைப்பு சேமிக்கப்பட்டது');
+});
+document.getElementById('syncNowBtn').addEventListener('click', syncNow);
+
+function pushToCloud(rec){
+  if(!state.scriptUrl) return;
+  const light = Object.assign({}, rec, {files: undefined});
+  fetch(state.scriptUrl, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({action:'save', record: light})
+  }).catch(()=>{});
+}
+function pushUserToCloud(user){
+  if(!state.scriptUrl) return;
+  fetch(state.scriptUrl, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({action:'saveUser', user})
+  }).catch(()=>{});
+}
+
+async function syncNow(){
+  if(!state.scriptUrl){ toast('முதலில் Script URL சேமிக்கவும்'); return; }
+  document.getElementById('syncStatus').textContent = 'Sync ஆகிறது...';
+  try{
+    const res = await fetch(state.scriptUrl + '?action=all');
+    const data = await res.json();
+    if(Array.isArray(data)){
+      const map = {};
+      state.listings.forEach(r=> map[r.id]=r);
+      data.forEach(r=>{
+        const existing = map[r.id];
+        if(existing && existing.files) r.files = existing.files;
+        map[r.id]=r;
+      });
+      state.listings = Object.values(map).sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+      saveListings();
+    }
+    // also pull user accounts so admin can look up / reset passwords for accounts made on other devices
+    try{
+      const ures = await fetch(state.scriptUrl + '?action=allUsers');
+      const udata = await ures.json();
+      if(Array.isArray(udata)){
+        udata.forEach(u=>{ if(u && u.phone) state.users[u.phone] = u; });
+        saveUsers();
+      }
+    }catch(e){}
+    renderAdmin();
+    document.getElementById('syncStatus').textContent = '✅ கடைசி sync: ' + new Date().toLocaleTimeString('ta-IN');
+    toast('Sync வெற்றி');
+  }catch(err){
+    document.getElementById('syncStatus').textContent = '❌ Sync தோல்வி';
+  }
+}
+
+setInterval(()=>{
+  if(document.getElementById('adminPanel').style.display==='block' && state.scriptUrl) syncNow();
+}, 30000);
+
+</script>
+</body>
+</html>
